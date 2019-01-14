@@ -31,6 +31,7 @@ namespace NewsClassTrainer
         environment = 17,
         corruption = 18,
         econ_develop = 19,
+        human_crisis = 20,
         unrecognized = 99
     };
 
