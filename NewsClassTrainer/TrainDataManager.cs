@@ -33,7 +33,7 @@ namespace NewsClassTrainer
         corruption = 17,
         econ_develop = 18,
         human_crisis = 19,
-        unrecognized = 99
+        unrecognized = 20
     };
 
     /// <summary>
@@ -57,11 +57,19 @@ namespace NewsClassTrainer
             }
         }
 
-        public static string TrainDataFilePath
+        public static string NewsDataFilePath
         {
             get
             {
                 return Path.Combine(Path.GetDirectoryName(Assembly.GetEntryAssembly().Location), "assets/train-data.json");
+            }
+        }
+
+        public static string MergedNewsDataFilePath
+        {
+            get
+            {
+                return Path.Combine(Path.GetDirectoryName(Assembly.GetEntryAssembly().Location), "assets/merged-train-data.json");
             }
         }
 
@@ -114,6 +122,27 @@ namespace NewsClassTrainer
             return feeds;
         }
 
+        public static List<FeedTrainData> GetTrainingDataFromFile(string filePath)
+        {
+            var trainData = new List<FeedTrainData>();
+
+            if (!File.Exists(filePath))
+            {
+                return trainData;
+            }
+
+            using (StreamReader r = new StreamReader(filePath))
+            {
+                string json = r.ReadToEnd();
+                if (!string.IsNullOrEmpty(json))
+                {
+                    trainData = JsonConvert.DeserializeObject<List<FeedTrainData>>(json);
+                }
+            }
+
+            return trainData;
+        }
+
         /// <summary>
         /// Retrieves the rss items from the rss feeds
         /// </summary>
@@ -158,21 +187,7 @@ namespace NewsClassTrainer
         /// <returns></returns>
         public static List<FeedTrainData> GetTrainingDataList()
         {
-            var trainData = new List<FeedTrainData>();
-
-            if (!File.Exists(TrainDataFilePath))
-            {
-                return trainData;
-            }
-
-            using (StreamReader r = new StreamReader(TrainDataFilePath))
-            {
-                string json = r.ReadToEnd();
-                if (!string.IsNullOrEmpty(json))
-                {
-                    trainData = JsonConvert.DeserializeObject<List<FeedTrainData>>(json);
-                }
-            }
+            var trainData = GetTrainingDataFromFile(NewsDataFilePath);
 
             if (trainData.Any())
             {
@@ -197,16 +212,49 @@ namespace NewsClassTrainer
             var training = new List<NewsData>();
             var test = new List<NewsData>();
             var trainData = GetTrainingDataList();
+            trainData = trainData.Where(d => !string.Equals(d.Category,
+                                                "unrecognized", 
+                                                StringComparison.InvariantCultureIgnoreCase)).ToList();
 
-            var trainingTextsCount = (trainData.Count / 100) * 80;
-            var trainingTexts = trainData.GetRange(0, trainingTextsCount);
-            training.AddRange(trainingTexts.Select(s => new NewsData { Text = s.Title + " " + s.Description, Label = s.Category }).ToList());
+            foreach (var i in Enum.GetValues(typeof(Categories)))
+            {
+                var name = Enum.GetName(typeof(Categories), i);
+                var categoryData = trainData.Where(td => td.Category == name).ToList();
 
-            var testTexts = trainData.GetRange(trainingTextsCount, trainData.Count - trainingTextsCount);
-            test.AddRange(testTexts.Select(s => new NewsData { Text = s.Title + " " + s.Description, Label = s.Category }).ToList());
+                if(!categoryData.Any())
+                {
+                    var data = new NewsData { Text = "Dummy data", Label = name };
+                    training.Add(data);
+                    test.Add(data);
+
+                    continue;
+                }
+
+                var trainingTextsCount = Convert.ToInt32(((double)categoryData.Count / 100) * 80);
+                var trainingTexts = categoryData.GetRange(0, trainingTextsCount);
+                training.AddRange(trainingTexts.Select(s => new NewsData { Text = s.Title + " " + s.Description, Label = s.Category }).ToList());
+
+                var testTexts = categoryData.GetRange(trainingTextsCount, categoryData.Count - trainingTextsCount);
+                test.AddRange(testTexts.Select(s => new NewsData { Text = s.Title + " " + s.Description, Label = s.Category }).ToList());
+  
+            }
 
             File.AppendAllLines(TestingSetPath, test.Select(s => $"{s.Text}\t{s.Label}"));
             File.AppendAllLines(TrainingSetPath, training.Select(s => $"{s.Text}\t{s.Label}"));
+
+        }
+
+        /// <summary>
+        /// Persists the tr
+        /// </summary>
+        /// <param name="trainingData"></param>
+        public static void PersistTrainingData(List<FeedTrainData> trainingData, string filePath)
+        {
+            using (StreamWriter file = File.CreateText(filePath))
+            {
+                JsonSerializer serializer = new JsonSerializer();
+                serializer.Serialize(file, trainingData);
+            }
         }
     }
 }

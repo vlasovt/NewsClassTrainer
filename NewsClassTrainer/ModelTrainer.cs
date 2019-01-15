@@ -14,22 +14,24 @@ namespace NewsClassTrainer
 
         public static PredictionModel<NewsData, NewsPrediction> Train()
         {
-            var pipeline = new LearningPipeline();
-            pipeline.Add(new TextLoader<NewsData>(TrainDataManager.TrainingSetPath, useHeader: false, separator: "tab"));
-            pipeline.Add(new TextFeaturizer("Features", "Text")
+            var pipeline = new LearningPipeline
             {
-                KeepDiacritics = false,
-                KeepPunctuations = false,
-                TextCase = TextNormalizerTransformCaseNormalizationMode.Lower,
-                OutputTokens = true,
-                Language = TextTransformLanguage.English,
-                StopWordsRemover = new PredefinedStopWordsRemover(),
-                VectorNormalizer = TextTransformTextNormKind.L2,
-                CharFeatureExtractor = new NGramNgramExtractor() { NgramLength = 3, AllLengths = false },
-                WordFeatureExtractor = new NGramNgramExtractor() { NgramLength = 3, AllLengths = true }
-            });
-            pipeline.Add(new Dictionarizer("Label"));
-            pipeline.Add(new StochasticDualCoordinateAscentClassifier());
+                new TextLoader<NewsData>(TrainDataManager.TrainingSetPath, useHeader: false, separator: "tab"),
+                new TextFeaturizer("Features", "Text")
+                {
+                    KeepDiacritics = false,
+                    KeepPunctuations = false,
+                    TextCase = TextNormalizerTransformCaseNormalizationMode.Lower,
+                    OutputTokens = true,
+                    Language = TextTransformLanguage.English,
+                    StopWordsRemover = new PredefinedStopWordsRemover(),
+                    VectorNormalizer = TextTransformTextNormKind.L2,
+                    CharFeatureExtractor = new NGramNgramExtractor() { NgramLength = 3, AllLengths = false },
+                    WordFeatureExtractor = new NGramNgramExtractor() { NgramLength = 3, AllLengths = true }
+                },
+                new Dictionarizer("Label"),
+                new StochasticDualCoordinateAscentClassifier()
+            };
             return pipeline.Train<NewsData, NewsPrediction>();
         }
 
