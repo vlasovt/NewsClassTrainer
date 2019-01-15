@@ -11,6 +11,7 @@ using X.Web.RSS.Structure;
 
 namespace NewsClassTrainer
 {
+   //todo: replace pirate entries with 'terror'
     public enum Categories
     {
         mil_crisis = 1,
@@ -26,12 +27,12 @@ namespace NewsClassTrainer
         spy = 11,
         social = 12,
         diplomacy = 13,
-        pirate = 14,
-        health_crisis = 15,
-        military = 16,
-        environment = 17,
-        corruption = 18,
-        econ_develop = 19,
+        health_crisis = 14,
+        military = 15,
+        environment = 16,
+        corruption = 17,
+        econ_develop = 18,
+        human_crisis = 19,
         unrecognized = 99
     };
 

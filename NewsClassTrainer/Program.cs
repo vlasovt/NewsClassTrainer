@@ -20,12 +20,10 @@ namespace NewsClassTrainer
 
             var trainingData = TrainDataManager.GetTrainingDataList();
 
-            if(!trainingData.Any())
+            if(trainingData.Any())
             {
-                return;
+                dataToTrain = dataToTrain.Where(a => !trainingData.Any(t => t.Title == a.Title)).ToList();
             }
-
-            dataToTrain = dataToTrain.Where(a => !trainingData.Any(t => t.Title == a.Title)).ToList();
 
             var newTrainData = new List<FeedTrainData>();
 
