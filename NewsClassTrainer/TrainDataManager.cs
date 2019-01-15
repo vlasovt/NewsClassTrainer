@@ -1,5 +1,6 @@
 ﻿using NewsClassTrainer.Entities;
 using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -47,6 +48,14 @@ namespace NewsClassTrainer
             }
         }
 
+        private static string BackupFilePath
+        {
+            get
+            {
+                return Path.Combine(Path.GetDirectoryName(Assembly.GetEntryAssembly().Location), "assets/backup-train-data.json");
+            }
+        }
+
         public static string TrainDataFilePath
         {
             get
@@ -55,11 +64,27 @@ namespace NewsClassTrainer
             }
         }
 
-        private static string BackupFilePath
+        public static string ModelPath
         {
             get
             {
-                return Path.Combine(Path.GetDirectoryName(Assembly.GetEntryAssembly().Location), "assets/backup-train-data.json");
+                return Path.Combine(Path.GetDirectoryName(Assembly.GetEntryAssembly().Location), "news-model.txt");
+            }
+        }
+
+        public static string TrainingSetPath
+        {
+            get
+            {
+                return Path.Combine(Path.GetDirectoryName(Assembly.GetEntryAssembly().Location), "train-set.txt");
+            }
+        }
+
+        public static string TestingSetPath
+        {
+            get
+            {
+                return Path.Combine(Path.GetDirectoryName(Assembly.GetEntryAssembly().Location), "test-set.txt");
             }
         }
 
@@ -158,6 +183,29 @@ namespace NewsClassTrainer
             }
 
             return trainData;
+        }
+
+        /// <summary>
+        /// Prepares the data for the model training
+        /// </summary>
+        public static void PrepareData()
+        {
+            File.Delete(TrainingSetPath);
+            File.Delete(TestingSetPath);
+
+            var training = new List<NewsData>();
+            var test = new List<NewsData>();
+            var trainData = GetTrainingDataList();
+
+            var trainingTextsCount = (trainData.Count / 100) * 80;
+            var trainingTexts = trainData.GetRange(0, trainingTextsCount);
+            training.AddRange(trainingTexts.Select(s => new NewsData { Text = s.Title + " " + s.Description, Label = s.Category }).ToList());
+
+            var testTexts = trainData.GetRange(trainingTextsCount, trainData.Count - trainingTextsCount);
+            test.AddRange(testTexts.Select(s => new NewsData { Text = s.Title + " " + s.Description, Label = s.Category }).ToList());
+
+            File.AppendAllLines(TestingSetPath, test.Select(s => $"{s.Text}\t{s.Label}"));
+            File.AppendAllLines(TrainingSetPath, training.Select(s => $"{s.Text}\t{s.Label}"));
         }
     }
 }

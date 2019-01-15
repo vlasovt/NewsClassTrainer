@@ -9,7 +9,6 @@ namespace NewsClassTrainer
 {
     class Program
     {
-
         static void Main(string[] args)
         {
             var dataToTrain = TrainDataManager.GetDataToTrain();
