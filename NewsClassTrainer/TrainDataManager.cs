@@ -15,25 +15,26 @@ namespace NewsClassTrainer
     public enum Categories
     {
         mil_crisis = 1,
-        pol_crisis = 2,
-        dip_crisis = 3,
-        econ_crisis = 4,
-        terror = 5,
-        nat_desaster = 6,
-        accident = 7,
-        rights = 8,
-        elections = 9,
-        protests = 10,
-        spy = 11,
-        social = 12,
-        diplomacy = 13,
-        health_crisis = 14,
-        military = 15,
-        environment = 16,
-        corruption = 17,
-        econ_develop = 18,
-        human_crisis = 19,
-        unrecognized = 20
+        pol_crisis,
+        dip_crisis,
+        econ_crisis,
+        terror,
+        nat_desaster,
+        accident,
+        rights,
+        elections,
+        protests,
+        spy,
+        social,
+        diplomacy,
+        health_crisis,
+        military,
+        environment,
+        corruption,
+        econ_develop,
+        human_crisis,
+        justice,
+        unrecognized
     };
 
     /// <summary>
@@ -170,9 +171,9 @@ namespace NewsClassTrainer
                     continue;
                 }
 
-                foreach(var item in rss.Channel.Items)
+                foreach (var item in rss.Channel.Items)
                 {
-                    item.Category = new RssCategory {Domain = rss.Channel.Title};
+                    item.Category = new RssCategory { Domain = rss.Channel.Title };
                 }
 
                 newsItems.AddRange(rss.Channel.Items);
@@ -213,7 +214,7 @@ namespace NewsClassTrainer
             var test = new List<NewsData>();
             var trainData = GetTrainingDataList();
             trainData = trainData.Where(d => !string.Equals(d.Category,
-                                                "unrecognized", 
+                                                "unrecognized",
                                                 StringComparison.InvariantCultureIgnoreCase)).ToList();
 
             foreach (var i in Enum.GetValues(typeof(Categories)))
@@ -221,7 +222,7 @@ namespace NewsClassTrainer
                 var name = Enum.GetName(typeof(Categories), i);
                 var categoryData = trainData.Where(td => td.Category == name).ToList();
 
-                if(!categoryData.Any())
+                if (!categoryData.Any())
                 {
                     var data = new NewsData { Text = "Dummy data", Label = name };
                     training.Add(data);
@@ -236,7 +237,7 @@ namespace NewsClassTrainer
 
                 var testTexts = categoryData.GetRange(trainingTextsCount, categoryData.Count - trainingTextsCount);
                 test.AddRange(testTexts.Select(s => new NewsData { Text = s.Title + " " + s.Description, Label = s.Category }).ToList());
-  
+
             }
 
             File.AppendAllLines(TestingSetPath, test.Select(s => $"{s.Text}\t{s.Label}"));
@@ -250,10 +251,20 @@ namespace NewsClassTrainer
         /// <param name="trainingData"></param>
         public static void PersistTrainingData(List<FeedTrainData> trainingData, string filePath)
         {
-            using (StreamWriter file = File.CreateText(filePath))
+            if (trainingData == null || !trainingData.Any())
             {
-                JsonSerializer serializer = new JsonSerializer();
-                serializer.Serialize(file, trainingData);
+                return;
+            }
+
+            var dataToPersist = trainingData.Where(i => !i.Category.Equals("unrecognized", StringComparison.InvariantCultureIgnoreCase));
+            
+            if (dataToPersist.Any())
+            {
+                using (StreamWriter file = File.CreateText(filePath))
+                {
+                    var serializer = new JsonSerializer();
+                    serializer.Serialize(file, dataToPersist);
+                }
             }
         }
     }
