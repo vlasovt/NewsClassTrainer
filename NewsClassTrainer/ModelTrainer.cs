@@ -10,8 +10,6 @@ namespace NewsClassTrainer
 {
     public class ModelTrainer
     {
-        public static object TextNormalizeKind { get; private set; }
-
         public static PredictionModel<NewsData, NewsPrediction> Train()
         {
             var pipeline = new LearningPipeline
