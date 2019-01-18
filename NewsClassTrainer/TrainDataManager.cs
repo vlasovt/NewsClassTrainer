@@ -256,14 +256,14 @@ namespace NewsClassTrainer
                 return;
             }
 
-            var dataToPersist = trainingData.Where(i => !i.Category.Equals("unrecognized", StringComparison.InvariantCultureIgnoreCase));
-            
-            if (dataToPersist.Any())
+            //var dataToPersist = trainingData.Where(i => !i.Category.Equals("unrecognized", StringComparison.InvariantCultureIgnoreCase));
+
+            if (trainingData.Any())
             {
                 using (StreamWriter file = File.CreateText(filePath))
                 {
                     var serializer = new JsonSerializer();
-                    serializer.Serialize(file, dataToPersist);
+                    serializer.Serialize(file, trainingData);
                 }
             }
         }
