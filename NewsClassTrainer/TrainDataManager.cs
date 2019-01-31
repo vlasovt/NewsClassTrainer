@@ -34,6 +34,8 @@ namespace NewsClassTrainer
         econ_develop,
         human_crisis,
         justice,
+        crime,
+        politics,
         unrecognized
     };
 

@@ -32,9 +32,9 @@ namespace NewsClassTrainer
                     case 2:
                         TrainModel();
                         break;
-                    //case 3:
-                    //    MergeNewsData();
-                    //    break;
+                    case 3:
+                        MergeNewsData();
+                        break;
                     default:
                         break;
                 }
@@ -49,7 +49,7 @@ namespace NewsClassTrainer
             Console.WriteLine("");
             Console.WriteLine("1. Retrieve news data");
             Console.WriteLine("2. Train the model");
-            //Console.WriteLine("3. Merge news data files");
+            Console.WriteLine("3. Merge news data files");
             Console.WriteLine("4. Quit");
         }
 
